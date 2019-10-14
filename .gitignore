@@ -1,0 +1,4 @@
+cifar-10_data/
+*.pdf
+.*
+*cache*
