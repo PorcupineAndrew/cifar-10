@@ -28,7 +28,7 @@ class Model:
         }
 
         self.loss, self.pred, self.acc = self.forward(True)
-        self.loss_val, self.pred_val, self.acc_val = self.forward(False)
+        self.loss_val, self.pred_val, self.acc_val = self.forward(False, reuse=True)
         
         self.learning_rate = tf.Variable(float(learning_rate), trainable=False, dtype=tf.float32)
         self.learning_rate_decay_op = self.learning_rate.assign(self.learning_rate * learning_rate_decay_factor)  # Learning rate decay
@@ -46,8 +46,8 @@ class Model:
     def forward(self, is_train, reuse=None):
         with tf.variable_scope("model", reuse=reuse):
             '''
-            TODO:  implement input -- Linear -- BN -- ReLU -- Dropout -- Linear -- loss
-                   the 10-class prediction output is named as "logits"
+            implement input -- Linear -- BN -- ReLU -- Dropout -- Linear -- loss
+            the 10-class prediction output is named as "logits"
             '''
             # Linear Layer
             hidden_1 = tf.add(tf.matmul(self.x_, self.weights["h1"]), self.biases["h1"])
@@ -72,22 +72,26 @@ class Model:
         return loss, pred, acc
 
 def batch_normalization_layer(incoming, is_train=True):
-    # TODO: implement the batch normalization function and applied it on fully-connected layers
-    # NOTE:  If isTrain is True, you should use mu and sigma calculated based on mini-batch
-    #       If isTrain is False, you must use mu and sigma estimated from training data
-    if is_train:
-        outgoing = incoming
-    else:
-        outgoing = incoming
+    '''
+    implement the batch normalization function and applied it on fully-connected layers
+    NOTE:  If isTrain is True, you should use mu and sigma calculated based on mini-batch
+          If isTrain is False, you must use mu and sigma estimated from training data
+    '''
+    outgoing = tf.layers.batch_normalization(incoming, training=is_train, momentum=0.9)
     return outgoing
     
-def dropout_layer(incoming, drop_rate, is_train=True):
-    # TODO: implement the dropout function and applied it on fully-connected layers
-    # NOTE: When drop_rate=0, it means drop no values
-    #       If isTrain is True, you should randomly drop some values, and scale the others by 1 / (1 - drop_rate)
-    #       If isTrain is False, remain all values not changed
+def dropout_layer(incoming, drop_rate, is_train=True, alternative=False):
+    '''
+    implement the dropout function and applied it on fully-connected layers
+    NOTE: When drop_rate=0, it means drop no values
+          If isTrain is True, you should randomly drop some values, and scale the others by 1 / (1 - drop_rate)
+          If isTrain is False, remain all values not changed
+    '''
     if is_train:
-        outgoing = tf.nn.dropout(incoming, rate=drop_rate)
+        if alternative:
+            outgoing = tf.scalar_mul(1/(1-drop_rate), incoming)
+        else:
+            outgoing = tf.nn.dropout(incoming, rate=drop_rate)
     else:
         outgoing = incoming
     return outgoing
