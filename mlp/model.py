@@ -6,14 +6,29 @@ FLAGS = tf.app.flags.FLAGS
 
 class Model:
     def __init__(self,
+                 drop_rate=0.5,
                  learning_rate=0.001,
                  learning_rate_decay_factor=0.9995):
-        self.x_ = tf.placeholder(tf.float32, [None, 32 * 32 * 3])
+
+        n_input = 3072
+        n_output=10
+        n_hidden_1 = 256
+
+        self.x_ = tf.placeholder(tf.float32, [None, n_input])
         self.y_ = tf.placeholder(tf.int32, [None])
 
-		# TODO:  fill the blank of the arguments
-        self.loss, self.pred, self.acc = self.forward()
-        self.loss_val, self.pred_val, self.acc_val = self.forward()
+        self.drop_rate = drop_rate
+        self.weights = {
+            "h1": tf.Variable(tf.random_normal([n_input, n_hidden_1], stddev=0.1)),
+            "out": tf.Variable(tf.constant(0.0, shape=[n_hidden_1, n_output])),
+        }
+        self.biases = {
+            "h1": tf.Variable(tf.random_normal([n_hidden_1])),
+            "out": tf.Variable(tf.random_normal([n_output])),
+        }
+
+        self.loss, self.pred, self.acc = self.forward(True)
+        self.loss_val, self.pred_val, self.acc_val = self.forward(False)
         
         self.learning_rate = tf.Variable(float(learning_rate), trainable=False, dtype=tf.float32)
         self.learning_rate_decay_op = self.learning_rate.assign(self.learning_rate * learning_rate_decay_factor)  # Learning rate decay
@@ -29,16 +44,25 @@ class Model:
                                     max_to_keep=3, pad_step_number=True, keep_checkpoint_every_n_hours=1.0)
                                     
     def forward(self, is_train, reuse=None):
-    
         with tf.variable_scope("model", reuse=reuse):
-            # TODO:  implement input -- Linear -- BN -- ReLU -- Dropout -- Linear -- loss
-            #        the 10-class prediction output is named as "logits"
-            # Your Linear Layer
-            # Your BN Layer: use batch_normalization_layer function
-            # Your Relu Layer
-            # Your Dropout Layer: use dropout_layer function
-            # Your Linear Layer
-            logits = tf.Variable(tf.constant(0.0, shape=[100, 10]))  # deleted this line after you implement above layers
+            '''
+            TODO:  implement input -- Linear -- BN -- ReLU -- Dropout -- Linear -- loss
+                   the 10-class prediction output is named as "logits"
+            '''
+            # Linear Layer
+            hidden_1 = tf.add(tf.matmul(self.x_, self.weights["h1"]), self.biases["h1"])
+
+            # BN Layer: use batch_normalization_layer function
+            BN_layer = batch_normalization_layer(hidden_1, is_train=is_train)
+
+            # Relu Layer
+            Relu_layer = tf.nn.relu(BN_layer)
+
+            # Dropout Layer: use dropout_layer function
+            DO_layer = dropout_layer(Relu_layer, self.drop_rate, is_train=is_train)
+
+            # Linear Layer
+            logits = tf.add(tf.matmul(DO_layer, self.weights["out"]), self.biases["out"])  # deleted this line after you implement above layers
 
         loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.y_, logits=logits))
         pred = tf.argmax(logits, 1)  # Calculate the prediction result
@@ -51,13 +75,20 @@ def batch_normalization_layer(incoming, is_train=True):
     # TODO: implement the batch normalization function and applied it on fully-connected layers
     # NOTE:  If isTrain is True, you should use mu and sigma calculated based on mini-batch
     #       If isTrain is False, you must use mu and sigma estimated from training data
-    pass
+    if is_train:
+        outgoing = incoming
+    else:
+        outgoing = incoming
+    return outgoing
     
 def dropout_layer(incoming, drop_rate, is_train=True):
     # TODO: implement the dropout function and applied it on fully-connected layers
-    # Note: When drop_rate=0, it means drop no values
+    # NOTE: When drop_rate=0, it means drop no values
     #       If isTrain is True, you should randomly drop some values, and scale the others by 1 / (1 - drop_rate)
     #       If isTrain is False, remain all values not changed
-    pass
-
+    if is_train:
+        outgoing = tf.nn.dropout(incoming, rate=drop_rate)
+    else:
+        outgoing = incoming
+    return outgoing
 

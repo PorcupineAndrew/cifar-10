@@ -77,6 +77,11 @@ with tf.Session() as sess:
     if not os.path.exists(FLAGS.train_dir):
         os.mkdir(FLAGS.train_dir)
     if FLAGS.is_train:
+        ''' 
+        for cifar_2d:
+            X_train.shape = (50000, 3072)
+            X_test.shape = (10000, 3072)
+        '''
         X_train, X_test, y_train, y_test = load_cifar_2d(FLAGS.data_dir)
         X_val, y_val = X_train[40000:], y_train[40000:]
         X_train, y_train = X_train[:40000], y_train[:40000]
