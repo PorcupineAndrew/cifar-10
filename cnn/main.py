@@ -9,7 +9,7 @@ from model import Model
 from load_data import load_cifar_4d
 
 tf.app.flags.DEFINE_integer("batch_size", 100, "batch size for training")
-tf.app.flags.DEFINE_integer("num_epochs", 20, "number of epochs")
+tf.app.flags.DEFINE_integer("num_epochs", 500, "number of epochs")
 tf.app.flags.DEFINE_float("drop_rate", 0.5, "drop out rate")
 tf.app.flags.DEFINE_boolean("is_train", True, "False to inference")
 tf.app.flags.DEFINE_string("data_dir", "../cifar-10_data", "data dir")
@@ -80,7 +80,7 @@ with tf.Session() as sess:
         X_train, X_test, y_train, y_test = load_cifar_4d(FLAGS.data_dir)
         X_val, y_val = X_train[40000:], y_train[40000:]
         X_train, y_train = X_train[:40000], y_train[:40000]
-        cnn_model = Model()
+        cnn_model = Model(drop_rate=FLAGS.drop_rate)
         if tf.train.get_checkpoint_state(FLAGS.train_dir):
             cnn_model.saver.restore(sess, tf.train.latest_checkpoint(FLAGS.train_dir))
         else:

@@ -44,7 +44,7 @@ class Model:
             # Conv Layer
             Conv_0 = tf.layers.conv2d(self.x_, filters=10, kernel_size=5)
             # BN Layer: use batch_normalization_layer function
-            BN_0 = batch_normalization_layer(Conv_0, is_train=is_train)
+            BN_0 = batch_normalization_layer(Conv_0, is_train=True)
             # Relu Layer
             Relu_0 = tf.nn.relu(BN_0)
             # Dropout Layer: use dropout_layer function
@@ -54,7 +54,7 @@ class Model:
             # Conv Layer
             Conv_1 = tf.layers.conv2d(Pool_0, filters=20, kernel_size=4)
             # BN Layer: use batch_normalization_layer function
-            BN_1 = batch_normalization_layer(Conv_1, is_train=is_train)
+            BN_1 = batch_normalization_layer(Conv_1, is_train=True)
             # Relu Layer
             Relu_1 = tf.nn.relu(BN_1)
             # Dropout Layer: use dropout_layer function

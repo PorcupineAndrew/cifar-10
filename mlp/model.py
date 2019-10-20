@@ -53,7 +53,7 @@ class Model:
             hidden_1 = tf.add(tf.matmul(self.x_, self.weights["h1"]), self.biases["h1"])
 
             # BN Layer: use batch_normalization_layer function
-            BN_layer = batch_normalization_layer(hidden_1, is_train=is_train)
+            BN_layer = batch_normalization_layer(hidden_1, is_train=True)
 
             # Relu Layer
             Relu_layer = tf.nn.relu(BN_layer)
