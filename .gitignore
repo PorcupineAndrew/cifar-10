@@ -3,3 +3,4 @@ cifar-10_data/
 .*
 *cache*
 */train/
+*/plot/
